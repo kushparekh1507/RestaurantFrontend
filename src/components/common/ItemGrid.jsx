@@ -1,7 +1,7 @@
 import React from "react";
 import { Edit, Trash2 } from "lucide-react";
 
-const ItemGrid = ({ items, onEdit }) => {
+const ItemGrid = ({ items, onEdit, onDelete }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {items.map((item) => (
@@ -22,7 +22,10 @@ const ItemGrid = ({ items, onEdit }) => {
               >
                 <Edit size={16} className="text-gray-600" />
               </button>
-              <button className="p-1 bg-white rounded-full shadow hover:bg-gray-100 transition-colors">
+              <button
+                onClick={() => onDelete(item.menuItemId, item.itemName)}
+                className="p-1 bg-white rounded-full shadow hover:bg-gray-100 transition-colors"
+              >
                 <Trash2 size={16} className="text-gray-600" />
               </button>
             </div>
@@ -36,7 +39,7 @@ const ItemGrid = ({ items, onEdit }) => {
                 {item.price.toFixed(2)}
               </span>
               <span className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">
-                {item.menuCategory.categoryName.replace("-", " ")}
+                {item.menuCategoryName.replace("-", " ")}
               </span>
             </div>
           </div>

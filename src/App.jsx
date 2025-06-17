@@ -9,6 +9,11 @@ import AuthLayout from "./layouts/AuthLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import OrderManagement from "./pages/customerAdmin/OrderManagment";
 import { loadUserFromToken } from "./redux/authSlice";
+import Menus from "./pages/customerAdmin/Menus";
+import WaiterMenus from "./pages/customerAdmin/WaiterMenus";
+import WaiterDashboard from "./pages/Waiter/WaiterDashboard";
+import ChefDashboard from "./pages/chef/ChefDashboard";
+import WaiterPendingOrders from "./pages/Waiter/WaiterPendingOrders";
 
 // Auth Pages
 const Login = lazy(() => import("./pages/auth/Login"));
@@ -32,23 +37,27 @@ const ManageTable = lazy(() => import("./pages/customerAdmin/ManageTable"));
 
 // ✅ Protected Route Component using Redux
 // Protected Route Component using Redux
-const ProtectedRoute = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles, allowedUserTypes }) => {
   const { user, isAuthenticated, isLoading } = useSelector(
     (state) => state.auth
   );
 
-  // Wait for user fetch to finish
   if (isLoading) {
     return <LoadingSpinner message="User is loading" />;
   }
 
-  // If not authenticated after loading
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // If user doesn't have permission
-  if (!allowedRoles.includes(user?.role || "")) {
+  // Role check
+  const roleAllowed = allowedRoles.includes(user?.role || "");
+
+  // Optional userType check (only if provided)
+  const userTypeAllowed =
+    !allowedUserTypes || allowedUserTypes.includes(user?.userType || "");
+
+  if (!roleAllowed || !userTypeAllowed) {
     return <Navigate to="/" replace />;
   }
 
@@ -104,11 +113,48 @@ function App() {
             >
               <Route index element={<CustomerAdminDashboard />} />
               <Route path="users" element={<ManageUsers />} />
-              <Route path="menu" element={<ManageMenu />} />
+              <Route path="categories" element={<ManageMenu />} />
+              <Route path="menus" element={<Menus />} />
+              <Route path="waitermenus" element={<WaiterMenus />} />
               <Route path="items" element={<ManageItems />} />
               <Route path="tables" element={<ManageTable />} />
               <Route path="orders" element={<OrderManagement />} />
             </Route>
+
+            <Route
+              path="/waiter"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["CustomerUser"]}
+                  allowedUserTypes={["Waiter"]}
+                >
+                  <WaiterDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/waiter/pending-orders"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["CustomerUser"]}
+                  allowedUserTypes={["Waiter"]}
+                >
+                  <WaiterPendingOrders />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/chef"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["CustomerUser"]}
+                  allowedUserTypes={["Chef"]}
+                >
+                  <ChefDashboard />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Catch-all route */}
             <Route path="*" element={<Navigate to="/" replace />} />

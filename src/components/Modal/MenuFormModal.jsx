@@ -6,15 +6,18 @@ const MenuFormModal = ({
   initialData = {},
   onSubmit,
   onCancel,
+  menus = [],
 }) => {
   const nameref = useRef();
   const desref = useRef();
+  const menuId = useRef();
   const [errors, setErrors] = useState([]);
 
   useEffect(() => {
     if (initialData) {
       nameref.current.value = initialData.categoryName || "";
       desref.current.value = initialData.description || "";
+      menuId.current.value = initialData.menuId || "";
     }
   }, []);
 
@@ -23,6 +26,7 @@ const MenuFormModal = ({
     const data = {
       categoryName: nameref.current.value,
       description: desref.current.value,
+      menuId: parseInt(menuId.current.value),
     };
 
     if (data.categoryName.length < 6) {
@@ -33,6 +37,7 @@ const MenuFormModal = ({
     if (onSubmit(data)) {
       nameref.current.value = "";
       desref.current.value = "";
+      menuId.current.value = "";
     }
   };
 
@@ -75,6 +80,21 @@ const MenuFormModal = ({
                   required
                   className="w-full border p-2 rounded"
                 />
+              </div>
+              <div>
+                <label className="block font-medium mb-1">Select Menu</label>
+                <select
+                  required
+                  className="w-full border p-2 rounded"
+                  ref={menuId}
+                >
+                  <option value={""}>Select Menu Type</option>
+                  {menus.map((m, index) => (
+                    <option key={index} value={m?.menuId}>
+                      {m?.menuName}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex justify-end gap-4 pt-2">
                 <button

@@ -6,6 +6,7 @@ import { ChefHat, Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { loadUserFromToken, setToken } from "../../redux/authSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,12 +34,13 @@ const Login = () => {
       .then(async (res) => {
         console.log(res.data);
         dispatch(setToken(res.data.token));
-
+        toast.success("Login successful!");
         const u = await dispatch(loadUserFromToken()).unwrap();
         console.log(u);
       })
       .catch((e) => {
         console.log(e.response?.data);
+        toast.error(e.response?.data);
       });
 
     setIsLoading(false);
@@ -53,9 +55,13 @@ const Login = () => {
         navigate("/customeradmin");
       } else if (user?.role == "CustomerUser") {
         console.log("Customer User");
+        console.log(user);
         if (user?.userType == "Waiter") {
           console.log("Customer User Waiter");
-          navigate("/waiter/table");
+          navigate("/waiter");
+        } else if (user?.userType == "Chef") {
+          console.log("Customer User Chef");
+          navigate("/chef");
         }
       }
     }

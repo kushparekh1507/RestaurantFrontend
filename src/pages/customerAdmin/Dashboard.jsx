@@ -1,53 +1,55 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Users, CreditCard, TrendingUp, Calendar, Star } from 'lucide-react';
-import StatCard from '../../components/common/StatCard';
-import LineChart from '../../components/common/LineChart';
-import BarChart from '../../components/common/BarChart';
-import AreaChart from '../../components/common/AreaChart';
-import RadarChart from '../../components/common/RadarChart';
-
-const customerGrowthData = [
-  { name: 'Jan', value: 50 },
-  { name: 'Feb', value: 75 },
-  { name: 'Mar', value: 120 },
-  { name: 'Apr', value: 150 },
-  { name: 'May', value: 200 },
-];
-
-const ordersPerDayData = [
-  { name: 'Mon', value: 20 },
-  { name: 'Tue', value: 35 },
-  { name: 'Wed', value: 40 },
-  { name: 'Thu', value: 25 },
-  { name: 'Fri', value: 55 },
-];
-
-const revenueData = [
-  { name: 'Jan', value: 10000 },
-  { name: 'Feb', value: 15000 },
-  { name: 'Mar', value: 18000 },
-  { name: 'Apr', value: 22000 },
-  { name: 'May', value: 27000 },
-];
-
-const feedbackData = [
-  { subject: 'Food', value: 2, fullMark: 5 },
-  { subject: 'Service', value: 4, fullMark: 5 },
-  { subject: 'Ambience', value: 3, fullMark: 5 },
-  { subject: 'Cleanliness', value: 5, fullMark: 5 },
-  { subject: 'Staff', value: 4, fullMark: 5 },
-];
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Users, CreditCard, Radar, PieChart } from "lucide-react";
+import StatCard from "../../components/common/StatCard";
+import AreaChart from "../../components/common/AreaChart";
+import RadarChart from "../../components/common/RadarChart";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import PieChartComponent from "../../components/common/PieChartComponent";
 
 const CustomerAdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [restaurantStats, setRestaurantStats] = useState({
+    totalorders: 0,
+    totalusers: 0,
+  });
+  const { user } = useSelector((s) => s.auth);
+
+  const fetchRestaurantStats = async () => {
+    try {
+      const res = await axios.get(
+        `/api/Restaurants/stats/${user?.restaurantId}`
+      );
+      setRestaurantStats({
+        totalorders: res.data.totalorders,
+        totalusers: res.data.totalusers,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    fetchRestaurantStats();
+    const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
 
-  const formatCurrency = (val) => `$${val.toLocaleString()}`;
+  const radarData = [
+    { subject: "Orders", value: restaurantStats.totalorders, fullMark: 100 },
+    { subject: "Users", value: restaurantStats.totalusers, fullMark: 100 },
+  ];
+
+  const areaData = [
+    { name: "Orders", value: restaurantStats.totalorders },
+    { name: "Users", value: restaurantStats.totalusers },
+  ];
+
+  const pieChartData = [
+    { name: "Orders", value: restaurantStats.totalorders },
+    { name: "Users", value: restaurantStats.totalusers },
+  ];
 
   if (isLoading) {
     return (
@@ -75,64 +77,30 @@ const CustomerAdminDashboard = () => {
       >
         <StatCard
           title="Total Orders"
-          value="156"
+          value={restaurantStats.totalorders}
           icon={CreditCard}
-          trend={12}
           color="primary"
         />
         <StatCard
-          title="Total Customers"
-          value="1,248"
+          title="Total Users"
+          value={restaurantStats.totalusers}
           icon={Users}
-          trend={8}
           color="secondary"
-        />
-        <StatCard
-          title="This Month Revenue"
-          value="$12,475"
-          icon={TrendingUp}
-          trend={15}
-          color="success"
-        />
-        <StatCard
-          title="Today's Bookings"
-          value="24"
-          icon={Calendar}
-          trend={-5}
-          color="warning"
         />
       </motion.div>
 
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <LineChart
-          data={customerGrowthData}
-          title="Customer Growth"
-          icon={<TrendingUp size={20} className="text-orange-600" />}
-          color="#FF5722"
-        />
-        <BarChart
-          data={ordersPerDayData}
-          title="Orders Per Day"
-          icon={<CreditCard size={20} className="text-orange-600" />}
-          color="#FF5722"
-        />
-      </div>
-
-      {/* Charts Row 2 */}
+      {/* Dynamic Charts Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AreaChart
-          data={revenueData}
-          title="Revenue Over Time"
-          icon={<TrendingUp size={20} className="text-orange-600" />}
+          data={areaData}
+          title="Order & User Overview"
+          icon={<PieChart size={20} className="text-orange-600" />}
           color="#FF5722"
-          tooltipFormatter={formatCurrency}
-          yAxisFormatter={formatCurrency}
         />
-        <RadarChart
-          data={feedbackData}
-          title="Feedback Overview"
-          icon={<Star size={20} className="text-orange-600" />}
+        <PieChartComponent
+          data={pieChartData}
+          title="Users vs Orders"
+          icon={<PieChart size={20} className="text-orange-600" />}
         />
       </div>
     </div>

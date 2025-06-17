@@ -4,12 +4,15 @@ import { motion } from "framer-motion";
 const MenuItemFormModal = ({
   mode = "add",
   initialData = {},
+  menus = [],
   categories = [],
   onSubmit,
   onCancel,
 }) => {
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const nameRef = useRef();
-  const catRef = useRef();
+  const [categoryId, setCategoryId] = useState("");
+  const [menuId, setMenuId] = useState("");
   const priceRef = useRef();
   const descRef = useRef();
   const [image, setImage] = useState(null);
@@ -19,7 +22,7 @@ const MenuItemFormModal = ({
 
     const formData = new FormData();
     formData.append("itemName", nameRef.current.value);
-    formData.append("menuCategoryId", catRef.current.value);
+    formData.append("menuCategoryId", categoryId);
     formData.append("price", priceRef.current.value);
     formData.append("description", descRef.current?.value || "");
     if (image) {
@@ -32,19 +35,32 @@ const MenuItemFormModal = ({
       descRef.current.value = "";
       priceRef.current.value = "";
       catRef.current.value = "";
+      setMenuId("");
       setImage(null);
     }
   };
 
   useEffect(() => {
     if (initialData) {
+      setMenuId(initialData?.menuId);
+      setFilteredCategories(
+        categories.filter((m) => m.menuId == initialData?.menuId)
+      );
       nameRef.current.value = initialData.itemName;
       descRef.current.value = initialData.description;
       priceRef.current.value = initialData.price;
-      catRef.current.value = initialData.menuCategoryId;
+      setCategoryId(initialData.menuCategoryId); // Set categoryId from initialData
       setImage(null);
     }
   }, []);
+
+  useEffect(() => {
+    if (menuId != "") {
+      setFilteredCategories(categories.filter((m) => m.menuId == menuId));
+    } else {
+      setFilteredCategories([]);
+    }
+  }, [menuId]);
 
   return (
     <motion.div
@@ -87,15 +103,31 @@ const MenuItemFormModal = ({
                 />
               </div>
               <div>
+                <label className="block font-medium mb-1">Select Menu</label>
+                <select
+                  value={menuId}
+                  onChange={(e) => setMenuId(e?.target?.value)}
+                  className="w-full border p-2 rounded cursor-pointer"
+                >
+                  <option value="">Select Menu</option>
+                  {menus.map((c) => (
+                    <option key={c.menuId} value={c.menuId}>
+                      {c.menuName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block font-medium mb-1">
                   Select Category
                 </label>
                 <select
-                  ref={catRef}
+                  value={categoryId} // Controlled by state
+                  onChange={(e) => setCategoryId(e.target.value)}
                   className="w-full border p-2 rounded cursor-pointer"
                 >
                   <option value="">Select Category</option>
-                  {categories.map((c) => (
+                  {filteredCategories.map((c) => (
                     <option key={c.menuCategoryId} value={c.menuCategoryId}>
                       {c.categoryName}
                     </option>

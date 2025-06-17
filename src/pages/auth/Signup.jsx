@@ -1,27 +1,28 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
-import { ChefHat, Eye, EyeOff } from "lucide-react";
+import { ChefHat } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const nameRef = useRef();
-  const emailRef = useRef();
-  const addressRef = useRef();
-  const contactRef = useRef();
+  // Using react-hook-form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     const formData = {
-      name: nameRef.current.value,
-      email: emailRef.current.value,
-      address: addressRef.current.value,
-      mobileNo: contactRef.current.value,
+      name: data.restaurantName,
+      email: data.email,
+      address: data.restaurantAddress,
+      mobileNo: data.phoneNumber,
     };
 
     console.log(formData);
@@ -32,16 +33,14 @@ const Signup = () => {
       .then((res) => {
         console.log(res);
         toast.success("You will be notified via email for further process");
+        navigate("/login");
       })
       .catch((e) => {
         console.log(e);
+        toast.error(e?.response?.data);
       });
     setIsLoading(false);
   };
-
-  useEffect(() => {
-    // toast.success("triggered");
-  }, []);
 
   return (
     <div className="w-full">
@@ -71,72 +70,87 @@ const Signup = () => {
       >
         <h2 className="text-2xl font-bold mb-6">Create an Account</h2>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Name & Email */}
-          <div className="grid gap-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                ref={emailRef}
-                className={`input-field`}
-                placeholder="Enter Email"
-              />
-            </div>
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              {...register("email", { required: "Email is required" })}
+              className="input-field"
+              placeholder="Enter Email"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
-          {/* Restaurant Info */}
+          {/* Restaurant Name */}
           <div>
-            <label
-              htmlFor="restaurantName"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Restaurant Name
             </label>
             <input
-              id="restaurantName"
               type="text"
-              ref={nameRef}
-              className={`input-field`}
+              {...register("restaurantName", {
+                required: "Restaurant Name is required",
+              })}
+              className="input-field"
               placeholder="Enter your restaurant name"
             />
+            {errors.restaurantName && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.restaurantName.message}
+              </p>
+            )}
           </div>
 
+          {/* Address */}
           <div>
-            <label
-              htmlFor="restaurantAddress"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Restaurant Address
             </label>
             <input
-              id="restaurantAddress"
               type="text"
-              ref={addressRef}
-              className={`input-field`}
+              {...register("restaurantAddress", {
+                required: "Address is required",
+              })}
+              className="input-field"
+              placeholder="Enter your restaurant address"
             />
+            {errors.restaurantAddress && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.restaurantAddress.message}
+              </p>
+            )}
           </div>
 
+          {/* Phone Number */}
           <div>
-            <label
-              htmlFor="phoneNumber"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone Number
             </label>
             <input
-              id="phoneNumber"
               type="tel"
-              ref={contactRef}
-              className={`input-field`}
+              {...register("phoneNumber", {
+                required: "Phone number is required",
+                pattern: {
+                  value: /^[0-9]{10}$/,
+                  message: "Phone number must be exactly 10 digits",
+                },
+              })}
+              className="input-field"
               placeholder="Enter your phone number"
             />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.phoneNumber.message}
+              </p>
+            )}
           </div>
 
           {/* Submit */}

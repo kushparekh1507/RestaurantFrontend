@@ -1,5 +1,3 @@
-// src/pages/customerAdmin/ManageTable.jsx
-
 import { useEffect, useState } from "react";
 import TableForm from "../../components/common/TableForm";
 import TabGroup from "../../components/common/TagGroup";
@@ -12,6 +10,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import TableFormModal from "../../components/Modal/TableFormModal";
 import { AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 const ManageTable = () => {
   const [tables, setTables] = useState([]);
@@ -23,6 +22,7 @@ const ManageTable = () => {
   const [formMode, setFormMode] = useState("add");
   const [showFormModal, setShowFormModal] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState("All");
 
   const handleAddClick = () => {
     setShowFormModal(true);
@@ -41,8 +41,6 @@ const ManageTable = () => {
     const payload = { ...data, restaurantId: user.restaurantId };
 
     console.log(payload);
-    // return;
-
     setLoading(true);
 
     if (formMode === "add") {
@@ -52,7 +50,9 @@ const ManageTable = () => {
           console.log(res);
         })
         .catch((e) => {
-          console.log(e);
+          toast.error(
+            e?.response?.data || "An error occurred while creating the table."
+          );
           return false;
         });
     } else if (formMode === "edit") {
@@ -62,9 +62,11 @@ const ManageTable = () => {
         .then((res) => {})
         .catch((e) => {
           console.log(e);
+          toast.error(e?.response?.data);
           return false;
         });
     }
+
     await fetchTables();
     setLoading(false);
     setSelectedTableId(null);
@@ -92,7 +94,7 @@ const ManageTable = () => {
       try {
         await axios.delete(`/api/Tables/${tableId}`);
         Swal.fire("Deleted!", `Table has been deleted.`, "success");
-        fetchTables(); // refresh the user list
+        fetchTables();
       } catch (error) {
         Swal.fire("Error", "There was a problem deleting the table.", "error");
         console.error(error);
@@ -118,6 +120,13 @@ const ManageTable = () => {
     fetchTables();
   }, []);
 
+  const tableFilters = ["All", "AC Hall", "Non AC Hall", "Candle Light Dinner"];
+
+  const filteredTables = tables.filter((t) => {
+    if (selectedFilter === "All") return true;
+    return t.tableTypeName.toLowerCase() === selectedFilter.toLowerCase();
+  });
+
   return (
     <div className="p-6 space-y-6 animate-fadeIn">
       <div className="flex items-center justify-between mb-6">
@@ -133,6 +142,22 @@ const ManageTable = () => {
         </div>
       </div>
 
+      <div className="flex gap-2 mb-4">
+        {tableFilters.map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setSelectedFilter(filter)}
+            className={`px-4 py-2 rounded-full border transition-all ${
+              selectedFilter === filter
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
+
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -145,18 +170,24 @@ const ManageTable = () => {
                   Capacity
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">
+                  Table Type
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
-              {tables.map((t, index) => (
+              {filteredTables.map((t, index) => (
                 <tr key={index}>
                   <td className="px-6 py-3 text-left text-sm font-semibold text-gray-600">
                     {t.tableNumber}
                   </td>
                   <td className="px-6 py-3 text-left text-sm font-semibold text-gray-600">
                     {t.capacity}
+                  </td>
+                  <td className="px-6 py-3 text-left text-sm font-semibold text-gray-600">
+                    {t.tableTypeName}
                   </td>
                   <td className="px-6 py-3 text-left text-sm font-semibold text-gray-600">
                     <div className="flex space-x-3">

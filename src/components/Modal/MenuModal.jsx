@@ -1,40 +1,26 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { motion } from "framer-motion";
 
-const TableFormModal = ({
-  mode = "add",
-  initialData = {},
-  onSubmit,
-  onCancel,
-}) => {
-  const tnumRef = useRef();
-  const capacityRef = useRef();
-  const type = useRef();
+const MenuModal = ({ mode = "add", initialData = {}, onSubmit, onCancel }) => {
   const tableTypes = [
     { id: 1, name: "AC Hall" },
     { id: 2, name: "Non AC Hall" },
     { id: 3, name: "Candle Light Dinner" },
   ];
 
-  useEffect(() => {
-    if (initialData) {
-      tnumRef.current.value = initialData.tableNumber || "";
-      capacityRef.current.value = initialData.capacity || "";
-      type.current.value = initialData.tableTypeId || "";
-    }
-  }, []);
+  const type = useRef();
+  const nameref = useRef();
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
+
     const data = {
-      tableNumber: parseInt(tnumRef.current.value),
-      capacity: parseInt(capacityRef.current.value),
+      menuName: nameref.current.value,
       tableTypeId: parseInt(type.current.value),
     };
 
     if (onSubmit(data)) {
-      tnumRef.current.value = "";
-      capacityRef.current.value = "";
+      nameref.current.value = "";
       type.current.value = "";
     }
   };
@@ -56,27 +42,14 @@ const TableFormModal = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)]">
           <div className="bg-white p-6 rounded-lg w-96 shadow-xl">
             <h2 className="text-xl font-semibold mb-4">
-              {mode === "edit" ? "Update Table" : "Add Table"}
+              {mode === "edit" ? "Update Menu" : "Add Menu"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block font-medium mb-1">Table Number</label>
+                <label className="block font-medium mb-1">Menu Name</label>
                 <input
-                  type="number"
-                  ref={tnumRef}
-                  placeholder="Enter table number"
-                  required
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-              <div>
-                <label className="block font-medium mb-1">Capacity</label>
-                <input
-                  type="number"
-                  ref={capacityRef}
-                  min={2}
-                  max={6}
-                  placeholder="Enter capacity"
+                  ref={nameref}
+                  placeholder="Enter Menu Name"
                   required
                   className="w-full border p-2 rounded"
                 />
@@ -121,4 +94,4 @@ const TableFormModal = ({
   );
 };
 
-export default TableFormModal;
+export default MenuModal;

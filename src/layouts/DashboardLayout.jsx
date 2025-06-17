@@ -58,8 +58,18 @@ const DashboardLayout = ({ role }) => {
             icon: <UsersIcon size={20} />,
           },
           {
-            to: "/customeradmin/menu",
-            text: "Manage Menu",
+            to: "/customeradmin/waitermenus",
+            text: "Waiter Menus",
+            icon: <BookOpen size={20} />,
+          },
+          {
+            to: "/customeradmin/menus",
+            text: "Manage Menus",
+            icon: <BookOpen size={20} />,
+          },
+          {
+            to: "/customeradmin/categories",
+            text: "Manage Menu Categories",
             icon: <BookOpen size={20} />,
           },
           {
